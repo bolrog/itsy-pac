@@ -2,7 +2,7 @@
  *  by Bolrog <bolrog@protonmail.com>
  */
 
-#include <Keyboard.h>
+#include "Keyboard.h"
 
 #define DEBOUNCE_MILLIS 10
 #define START_HOLD_TIME 50                // Time to hold P1 Start after it has been released without being used as SHIFT.
@@ -16,7 +16,7 @@ uint8_t  port_masks[5] = { B11111110, B11000000, B11011111, B01000000, B11110011
 uint8_t port_state_cur;
 uint8_t port_shifted_cur;
 uint8_t port_state_direct;
-uint32_t pin_timestamp[5 * 8];
+uint32_t pin_timestamp[40];
 bool p1_start_held = false;
 bool p1_start_used_as_shift = false;
 uint32_t p1_start_held_since = 0;
@@ -43,7 +43,7 @@ void setup()
 
   millis_now = millis();
 
-  for (uint8_t i = 0; i < sizeof(pin_timestamp); ++i) {
+  for (uint8_t i = 0; i < 40; ++i) {
     pin_timestamp[i] = millis_now;
   }
 
