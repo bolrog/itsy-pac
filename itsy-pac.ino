@@ -1,6 +1,33 @@
 /*  Itsy-PAC
- *  by Bolrog <bolrog@protonmail.com>
- */
+    by Bolrog <bolrog@protonmail.com>
+
+    Uses NKRO keyboard implementation by Keyboard.io, Inc. and NicoHood.
+*/
+
+/*
+Copyright (c) 2014-2015 NicoHood
+Copyright (c) 2015-2018 Keyboard.io, Inc
+
+See the readme for credit to other people.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
 
 #include "Keyboard.h"
 
@@ -110,7 +137,7 @@ void loop()
   millis_now = millis();
 
   if (p1_start_held && elapsed_ms(p1_start_held_since, millis_now) >= START_HOLD_TIME) {
-    Keyboard.release('1');
+    Keyboard.release(HID_KEYBOARD_1_AND_EXCLAMATION_POINT);
     p1_start_held = false;
   }
 
@@ -119,13 +146,13 @@ void loop()
     port_state_cur = port_state[0];
     port_shifted_cur = port_shifted[0];
     if (port_state_direct != port_state_cur) {
-      handle_pin(1, ' ', 0);                            // B1 (SCK) P1 Button 3
-      handle_pin(2, KEY_LEFT_SHIFT, 0);                 // B2 (MOSI) P1 Button 4
-      handle_pin(3, 'z', 0);                            // B3 (MISO) P1 Button 5
-      handle_pin(4, 'x', 0);                            // B4 (8) P1 Button 6
-      handle_pin(5, 'a', 0);                            // B5 (9) P2 Button 1
-      handle_pin(6, 'g', 0);                            // B6 (10) P2 Right
-      handle_pin(7, 'd', 0);                            // B7 (11) P2 Left
+      handle_pin(1, HID_KEYBOARD_SPACEBAR, 0);    // B1 (SCK) P1 Button 3
+      handle_pin(2, HID_KEYBOARD_LEFT_SHIFT, 0);  // B2 (MOSI) P1 Button 4
+      handle_pin(3, HID_KEYBOARD_Z_AND_Z, 0);     // B3 (MISO) P1 Button 5
+      handle_pin(4, HID_KEYBOARD_X_AND_X, 0);     // B4 (8) P1 Button 6
+      handle_pin(5, HID_KEYBOARD_A_AND_A, 0);     // B5 (9) P2 Button 1
+      handle_pin(6, HID_KEYBOARD_G_AND_G, 0);     // B6 (10) P2 Right
+      handle_pin(7, HID_KEYBOARD_D_AND_D, 0);     // B7 (11) P2 Left
       port_state[0] = port_state_cur;
       port_shifted[0] = port_shifted_cur;
     }
@@ -133,8 +160,8 @@ void loop()
     port_state_cur = port_state[1];
     port_shifted_cur = port_shifted[1];
     if (port_state_direct != port_state_cur) {
-      handle_pin(8 + 6, 'q', 0);                        // C6 (5) P2 Button 3
-      handle_pin(8 + 7, 'r', 0);                        // C7 (13) P2 Up
+      handle_pin(8 + 6, HID_KEYBOARD_Q_AND_Q, 0);   // C6 (5) P2 Button 3
+      handle_pin(8 + 7, HID_KEYBOARD_R_AND_R, 0);   // C7 (13) P2 Up
       port_state[1] = port_state_cur;
       port_shifted[1] = port_shifted_cur;
     }
@@ -142,13 +169,13 @@ void loop()
     port_state_cur = port_state[2];
     port_shifted_cur = port_shifted[2];
     if (port_state_direct != port_state_cur) {
-      handle_pin(16 + 0, 'w', 0);                       // D0 (3) P2 Button 4
-      handle_pin(16 + 1, 'i', 0);                       // D1 (2) P2 Button 5
-      handle_pin(16 + 2, '2', 0);                       // D2 (0) P2 Start  
-      handle_pin(16 + 3, 'k', 0);                       // D3 (1) P2 Button 6
-      handle_pin(16 + 4, '5', 0);                       // D4 (4) P1 Coin
-      handle_pin(16 + 6, 'f', 0);                       // D6 (12) P2 Down
-      handle_pin(16 + 7, '1', 0);                       // D7 (6) P1 Start (and SHIFT) 
+      handle_pin(16 + 0, HID_KEYBOARD_W_AND_W, 0);                  // D0 (3) P2 Button 4
+      handle_pin(16 + 1, HID_KEYBOARD_I_AND_I, 0);                  // D1 (2) P2 Button 5
+      handle_pin(16 + 2, HID_KEYBOARD_2_AND_AT, 0);                 // D2 (0) P2 Start  
+      handle_pin(16 + 3, HID_KEYBOARD_K_AND_K, HID_KEYBOARD_F11);   // D3 (1) P2 Button 6
+      handle_pin(16 + 4, HID_KEYBOARD_5_AND_PERCENT, 0);            // D4 (4) P1 Coin
+      handle_pin(16 + 6, HID_KEYBOARD_F_AND_F, 0);                  // D6 (12) P2 Down
+      handle_pin(16 + 7, HID_KEYBOARD_1_AND_EXCLAMATION_POINT, 0);  // D7 (6) P1 Start (and SHIFT) 
       port_state[2] = port_state_cur;
       port_shifted[2] = port_shifted_cur;
       is_shift_active = port_shifted_cur & 0x80;
@@ -157,7 +184,7 @@ void loop()
     port_state_cur = port_state[3];
     port_shifted_cur = port_shifted[3];
     if (port_state_direct != port_state_cur) {
-      handle_pin(24 + 6, 's', 0);                       // E6 (7) P2 Button 2
+      handle_pin(24 + 6, HID_KEYBOARD_S_AND_S, 0);  // E6 (7) P2 Button 2
       port_state[3] = port_state_cur;
       port_shifted[3] = port_shifted_cur;
     }
@@ -165,14 +192,15 @@ void loop()
     port_state_cur = port_state[4];
     port_shifted_cur = port_shifted[4];
     if (port_state_direct != port_state_cur) {
-      handle_pin(32 + 0, KEY_LEFT_ALT, 0);              // F0 (A5) P1 Button 2
-      handle_pin(32 + 1, KEY_LEFT_CTRL, '5');           // F1 (A4) P1 Button 1
-      handle_pin(32 + 4, KEY_RIGHT_ARROW, KEY_RETURN);  // F4 (A3) P1 Right
-      handle_pin(32 + 5, KEY_LEFT_ARROW, KEY_ESC);      // F5 (A1) P1 Left
-      handle_pin(32 + 6, KEY_DOWN_ARROW, 0);            // F6 (A1) P1 Down
-      handle_pin(32 + 7, KEY_UP_ARROW, KEY_TAB);        // F7 (A0) P1 Up
+      handle_pin(32 + 0, HID_KEYBOARD_LEFT_ALT, 0);                               // F0 (A5) P1 Button 2
+      handle_pin(32 + 1, HID_KEYBOARD_LEFT_CONTROL, HID_KEYBOARD_5_AND_PERCENT);  // F1 (A4) P1 Button 1
+      handle_pin(32 + 4, HID_KEYBOARD_RIGHT_ARROW, HID_KEYBOARD_RETURN);          // F4 (A3) P1 Right
+      handle_pin(32 + 5, HID_KEYBOARD_LEFT_ARROW, HID_KEYBOARD_ESCAPE);           // F5 (A1) P1 Left
+      handle_pin(32 + 6, HID_KEYBOARD_DOWN_ARROW, 0);                             // F6 (A1) P1 Down
+      handle_pin(32 + 7, HID_KEYBOARD_UP_ARROW, HID_KEYBOARD_TAB);                // F7 (A0) P1 Up
       port_state[4] = port_state_cur;
       port_shifted[4] = port_shifted_cur;
     }
+    Keyboard.sendReport();
   }
 }
