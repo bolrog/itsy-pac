@@ -10,7 +10,10 @@ Two-player arcade cabinet inputs using a single AdaFruit ItsyBitsy 32u4 (5V vers
 - Emits standard MAME keys (easy to change as you like)
 - Fast debouncing
 
-## How to use
+## How to wire it
+![Pinout](itsy-pac.png?raw=true "Pinout")
+
+## How to build/upload to board
 - Install arduino-cli and AdaFruit AVR core
 - Ensure ItsyBitsy 32u4 is connected
 - Run ./build.sh
