@@ -10,4 +10,8 @@ For both players:
 
 Only one coin button is mapped (P1) because I ran out of GPIOs on the ItsyBitsy.
 
-Written to be fast, not readable. Haven't measured latency much yet. Borrows debouncing idea from Daemonbite.
+Written to be fast, not readable.
+Haven't measured latency much yet.
+
+Borrows debouncing idea from Daemonbite.
+Uses N-key rollover implementation by Keyboardio Inc. and Nico Hood.
