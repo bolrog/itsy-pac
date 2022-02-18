@@ -3,13 +3,19 @@ Open source I-PAC-like using an Adafruit ItsyBitsy 32u4
 
 Two-player arcade cabinet inputs using a single AdaFruit ItsyBitsy 32u4 (5V version recommended).
 
-For both players:
-- Up, Down, Left, Right
-- Buttons 1-6
-- Start
+## Features
+- Inputs for two players: Joystick, Buttons 1-6, Start
+- Input for a single Coin button
+- N-key rollover
+- Fast debouncing
 
-Only one coin button is mapped (P1) because I ran out of GPIOs on the ItsyBitsy.
+## How to use
+- Install arduino-cli and AdaFruit AVR core
+- Ensure ItsyBitsy 32u4 is connected
+- Run ./build.sh
+- Run ./upload.sh
 
+## Notes
 Written to be fast, not readable.
 Haven't measured latency much yet.
 
