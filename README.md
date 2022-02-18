@@ -6,7 +6,8 @@ Two-player arcade cabinet inputs using a single AdaFruit ItsyBitsy 32u4 (5V vers
 ## Features
 - Inputs for two players: Joystick, Buttons 1-6, Start
 - Input for a single Coin button
-- N-key rollover
+- Acts like a keyboard with N-key rollover
+- Emits standard MAME keys (easy to change as you like)
 - Fast debouncing
 
 ## How to use
