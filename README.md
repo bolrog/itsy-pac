@@ -15,6 +15,7 @@ Two-player arcade cabinet inputs using a single AdaFruit ItsyBitsy 32u4 (5V vers
 
 ## How to build/upload to board
 - Install arduino-cli and AdaFruit AVR core
+- Edit Config.h (the default keys follow MAME convention, but you may want to edit the shifted keys).
 - Ensure ItsyBitsy 32u4 is connected
 - Run ./build.sh
 - Run ./upload.sh
