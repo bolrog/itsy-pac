@@ -30,16 +30,22 @@ THE SOFTWARE.
 */
 
 #include "Keyboard.h"
+#include "Config.h"
 
 #define DEBOUNCE_MILLIS 10
 #define START_HOLD_TIME 50                // Time to hold P1 Start after it has been released without being used as SHIFT.
 
 #define PIN_P1_START (16 + 7)
 
+#define PORT_MASK_B B11111110
+#define PORT_MASK_C B11000000
+#define PORT_MASK_D B11011111
+#define PORT_MASK_E B01000000
+#define PORT_MASK_F B11110011
+
 uint32_t millis_now = 0;
-uint8_t  port_state[5] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-uint8_t  port_shifted[5] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
-uint8_t  port_masks[5] = { B11111110, B11000000, B11011111, B01000000, B11110011 };
+uint8_t port_state[5] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+uint8_t port_shifted[5] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
 uint8_t port_state_cur;
 uint8_t port_shifted_cur;
 uint8_t port_state_direct;
@@ -51,22 +57,22 @@ bool is_shift_active;
 
 void setup() 
 {
-  DDRB  &= ~port_masks[0]; // 7 pins
-  DDRC  &= ~port_masks[1]; // 2 pins
-  DDRD  &= ~port_masks[2]; // 7 pins
-  DDRE  &= ~port_masks[3]; // 1 pins
-  DDRF  &= ~port_masks[4]; // 6 pins
-  PORTB |=  port_masks[0];
-  PORTC |=  port_masks[1];
-  PORTD |=  port_masks[2];
-  PORTE |=  port_masks[3];
-  PORTF |=  port_masks[4];
+  DDRB  &= ~PORT_MASK_B; // 7 pins
+  DDRC  &= ~PORT_MASK_C; // 2 pins
+  DDRD  &= ~PORT_MASK_D; // 7 pins
+  DDRE  &= ~PORT_MASK_E; // 1 pins
+  DDRF  &= ~PORT_MASK_F; // 6 pins
+  PORTB |= PORT_MASK_B;
+  PORTC |= PORT_MASK_C;
+  PORTD |= PORT_MASK_D;
+  PORTE |= PORT_MASK_E;
+  PORTF |= PORT_MASK_F;
 
-  port_state[0] = PINB & port_masks[0];
-  port_state[1] = PINC & port_masks[1];
-  port_state[2] = PIND & port_masks[2];
-  port_state[3] = PINE & port_masks[3];
-  port_state[4] = PINF & port_masks[4];
+  port_state[0] = PINB & PORT_MASK_B;
+  port_state[1] = PINC & PORT_MASK_C;
+  port_state[2] = PIND & PORT_MASK_D;
+  port_state[3] = PINE & PORT_MASK_E;
+  port_state[4] = PINF & PORT_MASK_F;
 
   millis_now = millis();
 
@@ -134,73 +140,82 @@ static inline void handle_pin(const uint8_t pin, const uint8_t key, const uint8_
 
 void loop() 
 {
+  bool changed = false;
+
   millis_now = millis();
 
   if (p1_start_held && elapsed_ms(p1_start_held_since, millis_now) >= START_HOLD_TIME) {
     Keyboard.release(HID_KEYBOARD_1_AND_EXCLAMATION_POINT);
     p1_start_held = false;
+    changed = true;
+  }
+  
+  port_state_direct = PINB & PORT_MASK_B;
+  port_state_cur = port_state[0];
+  port_shifted_cur = port_shifted[0];
+  if (port_state_direct != port_state_cur) {
+    handle_pin(1, MAPPING_P1_BUTTON3);        // B1 (SCK)
+    handle_pin(2, MAPPING_P1_BUTTON4);        // B2 (MOSI)
+    handle_pin(3, MAPPING_P1_BUTTON5);        // B3 (MISO)
+    handle_pin(4, MAPPING_P1_BUTTON6);        // B4 (8)
+    handle_pin(5, MAPPING_P2_BUTTON1);        // B5 (9)
+    handle_pin(6, MAPPING_P2_RIGHT);          // B6 (10)
+    handle_pin(7, MAPPING_P2_LEFT);           // B7 (11)
+    port_state[0] = port_state_cur;
+    port_shifted[0] = port_shifted_cur;
+    changed = true;
+  }
+  port_state_direct = PINC & PORT_MASK_C;
+  port_state_cur = port_state[1];
+  port_shifted_cur = port_shifted[1];
+  if (port_state_direct != port_state_cur) {
+    handle_pin(8 + 6, MAPPING_P2_BUTTON3);    // C6 (5)
+    handle_pin(8 + 7, MAPPING_P2_UP);         // C7 (13)
+    port_state[1] = port_state_cur;
+    port_shifted[1] = port_shifted_cur;
+    changed = true;
+  }
+  port_state_direct = PIND & PORT_MASK_D;
+  port_state_cur = port_state[2];
+  port_shifted_cur = port_shifted[2];
+  if (port_state_direct != port_state_cur) {
+    handle_pin(16 + 0, MAPPING_P2_BUTTON4);   // D0 (3)
+    handle_pin(16 + 1, MAPPING_P2_BUTTON5);   // D1 (2)
+    handle_pin(16 + 2, MAPPING_P2_START);     // D2 (0)
+    handle_pin(16 + 3, MAPPING_P2_BUTTON6);   // D3 (1)
+    handle_pin(16 + 4, MAPPING_P1_COIN);      // D4 (4)
+    handle_pin(16 + 6, MAPPING_P2_DOWN);      // D6 (12)
+    handle_pin(16 + 7, MAPPING_P1_START);     // D7 (6)
+    port_state[2] = port_state_cur;
+    port_shifted[2] = port_shifted_cur;
+    is_shift_active = port_shifted_cur & 0x80;
+    changed = true;
+  }
+  port_state_direct = PINE & PORT_MASK_E;
+  port_state_cur = port_state[3];
+  port_shifted_cur = port_shifted[3];
+  if (port_state_direct != port_state_cur) {
+    handle_pin(24 + 6, MAPPING_P2_BUTTON2);   // E6 (7)
+    port_state[3] = port_state_cur;
+    port_shifted[3] = port_shifted_cur;
+    changed = true;
+  }
+  port_state_direct = PINF & PORT_MASK_F;
+  port_state_cur = port_state[4];
+  port_shifted_cur = port_shifted[4];
+  if (port_state_direct != port_state_cur) {
+    handle_pin(32 + 0, MAPPING_P1_BUTTON2);   // F0 (A5)
+    handle_pin(32 + 1, MAPPING_P1_BUTTON1);   // F1 (A4)
+    handle_pin(32 + 4, MAPPING_P1_RIGHT);     // F4 (A3)
+    handle_pin(32 + 5, MAPPING_P1_LEFT);      // F5 (A1)
+    handle_pin(32 + 6, MAPPING_P1_DOWN);      // F6 (A1)
+    handle_pin(32 + 7, MAPPING_P1_UP);        // F7 (A0)
+    port_state[4] = port_state_cur;
+    port_shifted[4] = port_shifted_cur;
+    changed = true;
   }
 
-  for (uint8_t i = 0; i < 1; ++i) {
-    port_state_direct = PINB & port_masks[0];
-    port_state_cur = port_state[0];
-    port_shifted_cur = port_shifted[0];
-    if (port_state_direct != port_state_cur) {
-      handle_pin(1, HID_KEYBOARD_SPACEBAR, 0);    // B1 (SCK) P1 Button 3
-      handle_pin(2, HID_KEYBOARD_LEFT_SHIFT, 0);  // B2 (MOSI) P1 Button 4
-      handle_pin(3, HID_KEYBOARD_Z_AND_Z, 0);     // B3 (MISO) P1 Button 5
-      handle_pin(4, HID_KEYBOARD_X_AND_X, 0);     // B4 (8) P1 Button 6
-      handle_pin(5, HID_KEYBOARD_A_AND_A, 0);     // B5 (9) P2 Button 1
-      handle_pin(6, HID_KEYBOARD_G_AND_G, 0);     // B6 (10) P2 Right
-      handle_pin(7, HID_KEYBOARD_D_AND_D, 0);     // B7 (11) P2 Left
-      port_state[0] = port_state_cur;
-      port_shifted[0] = port_shifted_cur;
-    }
-    port_state_direct = PINC & port_masks[1];
-    port_state_cur = port_state[1];
-    port_shifted_cur = port_shifted[1];
-    if (port_state_direct != port_state_cur) {
-      handle_pin(8 + 6, HID_KEYBOARD_Q_AND_Q, 0);   // C6 (5) P2 Button 3
-      handle_pin(8 + 7, HID_KEYBOARD_R_AND_R, 0);   // C7 (13) P2 Up
-      port_state[1] = port_state_cur;
-      port_shifted[1] = port_shifted_cur;
-    }
-    port_state_direct = PIND & port_masks[2];
-    port_state_cur = port_state[2];
-    port_shifted_cur = port_shifted[2];
-    if (port_state_direct != port_state_cur) {
-      handle_pin(16 + 0, HID_KEYBOARD_W_AND_W, 0);                  // D0 (3) P2 Button 4
-      handle_pin(16 + 1, HID_KEYBOARD_I_AND_I, 0);                  // D1 (2) P2 Button 5
-      handle_pin(16 + 2, HID_KEYBOARD_2_AND_AT, 0);                 // D2 (0) P2 Start  
-      handle_pin(16 + 3, HID_KEYBOARD_K_AND_K, HID_KEYBOARD_F11);   // D3 (1) P2 Button 6
-      handle_pin(16 + 4, HID_KEYBOARD_5_AND_PERCENT, 0);            // D4 (4) P1 Coin
-      handle_pin(16 + 6, HID_KEYBOARD_F_AND_F, 0);                  // D6 (12) P2 Down
-      handle_pin(16 + 7, HID_KEYBOARD_1_AND_EXCLAMATION_POINT, 0);  // D7 (6) P1 Start (and SHIFT) 
-      port_state[2] = port_state_cur;
-      port_shifted[2] = port_shifted_cur;
-      is_shift_active = port_shifted_cur & 0x80;
-    }
-    port_state_direct = PINE & port_masks[3];
-    port_state_cur = port_state[3];
-    port_shifted_cur = port_shifted[3];
-    if (port_state_direct != port_state_cur) {
-      handle_pin(24 + 6, HID_KEYBOARD_S_AND_S, 0);  // E6 (7) P2 Button 2
-      port_state[3] = port_state_cur;
-      port_shifted[3] = port_shifted_cur;
-    }
-    port_state_direct = PINF & port_masks[4];
-    port_state_cur = port_state[4];
-    port_shifted_cur = port_shifted[4];
-    if (port_state_direct != port_state_cur) {
-      handle_pin(32 + 0, HID_KEYBOARD_LEFT_ALT, 0);                               // F0 (A5) P1 Button 2
-      handle_pin(32 + 1, HID_KEYBOARD_LEFT_CONTROL, HID_KEYBOARD_5_AND_PERCENT);  // F1 (A4) P1 Button 1
-      handle_pin(32 + 4, HID_KEYBOARD_RIGHT_ARROW, HID_KEYBOARD_RETURN);          // F4 (A3) P1 Right
-      handle_pin(32 + 5, HID_KEYBOARD_LEFT_ARROW, HID_KEYBOARD_ESCAPE);           // F5 (A1) P1 Left
-      handle_pin(32 + 6, HID_KEYBOARD_DOWN_ARROW, 0);                             // F6 (A1) P1 Down
-      handle_pin(32 + 7, HID_KEYBOARD_UP_ARROW, HID_KEYBOARD_TAB);                // F7 (A0) P1 Up
-      port_state[4] = port_state_cur;
-      port_shifted[4] = port_shifted_cur;
-    }
+  if (changed) {
     Keyboard.sendReport();
   }
 }
